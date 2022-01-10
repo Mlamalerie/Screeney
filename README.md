@@ -1,4 +1,4 @@
-# Logiciel "Screeney One Click"
+# Screeney App
 
 Installations prérequis:
 • pyautogui
