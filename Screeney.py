@@ -9,16 +9,13 @@ import pyautogui
 def get_matieres():
     with open('liste_matieres.txt', 'r', encoding="utf-8") as f:
         m = f.read().split('\n')
-        res = [mat.upper() for mat in m]
-        return res
+        return [mat.upper() for mat in m]
 
 def CreerDossierSauvegarde(ou, doss):
-    nomEmplacementSauvegarde = ou + "/" + doss
+    nomEmplacementSauvegarde = f"{ou}/{doss}"
     if not os.path.exists(nomEmplacementSauvegarde):
         os.mkdir(nomEmplacementSauvegarde)
-        return nomEmplacementSauvegarde
-    else:
-        return nomEmplacementSauvegarde
+    return nomEmplacementSauvegarde
 
 
 def SemblableFichier(fic, fic2):
@@ -26,10 +23,7 @@ def SemblableFichier(fic, fic2):
     b = os.path.getsize(fic2)
     diff = abs(a - b)
     print(diff)
-    if diff < 1000:
-        return True, diff
-    else:
-        return False, diff
+    return (True, diff) if diff < 1000 else (False, diff)
 
 
 
@@ -37,7 +31,7 @@ def SupprimerFichier(path):
     if os.path.exists(path):
         os.remove(path)
     else:
-        print("Impossible de supprimer le fichier " + path + " car il n'existe pas")
+        print(f"Impossible de supprimer le fichier {path} car il n'existe pas")
 
 
 window = Tk()
@@ -59,15 +53,17 @@ listeCombo.current(len(listeMatieres) - 1)
 
 def open_folder():
     nomMatiere = listeCombo.get()
-    if not nomMatiere == listeMatieres[-1]:
-        nomEmplacementSauvegarde = CreerDossierSauvegarde(CreerDossierSauvegarde("H:/Desktop", "SCREENEY"), "- " + nomMatiere)
+    if nomMatiere != listeMatieres[-1]:
+        nomEmplacementSauvegarde = CreerDossierSauvegarde(
+            CreerDossierSauvegarde("H:/Desktop", "SCREENEY"), f"- {nomMatiere}"
+        )
 
         path =  nomEmplacementSauvegarde
         path = path.replace('/','\\')
 
         print("open", path)
         if os.path.exists(path):
-            command = 'explorer.exe ' + path
+            command = f'explorer.exe {path}'
             os.system(command)
 
 
@@ -88,41 +84,44 @@ def capturer():
 
 
     nomMatiere = listeCombo.get()
-    if not nomMatiere == listeMatieres[-1]:
+    if nomMatiere != listeMatieres[-1]:
         nomEmplacementSauvegarde = CreerDossierSauvegarde(
-            CreerDossierSauvegarde(CreerDossierSauvegarde("h:/Desktop", "SCREENEY"), "- " + nomMatiere.lower()),
-            datetime.datetime.now().strftime('%Y-%m-%d (%a)'))
+            CreerDossierSauvegarde(
+                CreerDossierSauvegarde("h:/Desktop", "SCREENEY"),
+                f"- {nomMatiere.lower()}",
+            ),
+            datetime.datetime.now().strftime('%Y-%m-%d (%a)'),
+        )
 
         comm = Comment.get()
         comm = comm.strip()
         if len(comm) > 0:
-            comm = ' ' + comm
+            comm = f' {comm}'
 
         myDatetime = datetime.datetime.now()
-        nomFichier = myDatetime.strftime('%Y-%m-%d-%H%M%S' + comm)
-        photo = nomEmplacementSauvegarde + "/" + nomFichier + ".png"
+        nomFichier = myDatetime.strftime(f'%Y-%m-%d-%H%M%S{comm}')
+        photo = f"{nomEmplacementSauvegarde}/{nomFichier}.png"
 
         # prendre photo
         pyautogui.screenshot(photo)
-        print("#" + str(c) + "# " + photo)
+        print(f"#{str(c)}# {photo}")
 
         # pour les photo sauf la premiere
         if (c > 0):
             # si photo semblable a lancienne photo alors suprr photo
             semblable = SemblableFichier(photo, ancienphoto)
             if semblable[0]:
-                print(">>> PAREIL! " + str(semblable[1]) + " # " + photo + " VS " + ancienphoto)
+                print(f">>> PAREIL! {str(semblable[1])} # {photo} VS {ancienphoto}")
                 label.config(text="Image similaire ! Je cala pas", fg='red')
                 SupprimerFichier(photo)
-            # sinon, si nouvelle photo
             else:
                 c += 1
-                label.config(text="#" + str(c) + " ▪ " + photo.split('/')[-1], fg='green')
+                label.config(text=f"#{c} ▪ " + photo.split('/')[-1], fg='green')
                 ancienphoto = photo
 
         else:
             c += 1
-            label.config(text="#" + str(c) + " ▪ " + photo.split('/')[-1], fg='green')
+            label.config(text=f"#{c} ▪ " + photo.split('/')[-1], fg='green')
             ancienphoto = photo
 
         time.sleep(1)
